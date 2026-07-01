@@ -26,12 +26,34 @@ export default async function handler(req, res) {
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const MODEL_NAME = "gemini-1.5-flash"; // switched to lower‑quota model
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 25000; // 25s as suggested by API
     const systemInstruction = `Bạn là một trợ lý AI thông thái, thân thiện và hiểu rõ về du lịch Đà Nẵng. Cung cấp câu trả lời ngắn gọn, hữu ích, không kèm markdown. Trả lời chỉ dưới dạng văn bản thuần, không có ký tự đặc biệt.`;
     const prompt = `${systemInstruction}\n\nCâu hỏi của người dùng: "${userPrompt}"`;
-    const result = await model.generateContent(prompt);
-    const text = result?.response?.text?.() ?? result?.response?.text ?? "";
-    res.status(200).json({ answer: text.trim() });
+    let attempt = 0;
+    while (attempt < MAX_RETRIES) {
+      try {
+        const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+        const result = await model.generateContent(prompt);
+        const text = result?.response?.text?.() ?? result?.response?.text ?? "";
+        res.status(200).json({ answer: text.trim() });
+        return;
+      } catch (error) {
+        // If we hit quota (429) retry after delay
+        if (error?.status === 429) {
+          console.warn(`Gemini quota hit, retry ${attempt + 1}/${MAX_RETRIES} after ${RETRY_DELAY_MS}ms`);
+          await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+          attempt++;
+          continue;
+        }
+        console.error("Gemini serverless function error:", error);
+        res.status(500).json({ error: "Không thể kết nối với Gemini. Vui lòng thử lại sau." });
+        return;
+      }
+    }
+    // If we exhausted retries
+    res.status(503).json({ error: "Gemini quota exceeded, vui lòng thử lại sau." });
   } catch (error) {
     console.error("Gemini serverless function error:", error);
     res.status(500).json({ error: "Không thể kết nối với Gemini. Vui lòng thử lại sau." });
