@@ -85,6 +85,34 @@ import {
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import Chatbot from "./Chatbot";
 
+// Custom Dragon Bridge SVG Icon for Da Nang branding
+export function DragonBridgeIcon({ className = "w-6 h-6" }) {
+  return (
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      {/* Water Waves */}
+      <path d="M8 50 C 16 48, 20 52, 28 50 C 36 48, 40 52, 48 50 C 56 48, 60 52, 64 50" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" opacity="0.5" />
+      <path d="M0 54 C 8 52, 12 56, 20 54 C 28 52, 32 56, 40 54 C 48 52, 52 56, 60 54" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
+      
+      {/* Bridge Deck */}
+      <line x1="4" y1="42" x2="60" y2="42" stroke="#cbd5e1" strokeWidth="3" strokeLinecap="round" />
+      
+      {/* Dragon Body (Golden arches) */}
+      <path d="M12 42 Q 19 16, 26 42 Q 33 16, 40 42 Q 47 16, 54 42" fill="none" stroke="#fbbf24" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
+      
+      {/* Dragon Head (Facing right, looking up slightly) */}
+      <path d="M54 42 L 56 32 L 62 33 L 63 38 L 61 43 Z" fill="#fbbf24" stroke="#fbbf24" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+      
+      {/* Dragon Fire/Horn details */}
+      <path d="M56 32 Q 54 28, 51 30" fill="none" stroke="#f87171" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M62 33 Q 65 30, 68 31" fill="none" stroke="#fb923c" strokeWidth="1.5" strokeLinecap="round" />
+      
+      {/* Dragon Eye */}
+      <circle cx="58.5" cy="35.5" r="0.8" fill="#ef4444" />
+    </svg>
+  );
+}
+
+
 /* ══════════════════════════════════════════════════════════
    § 1 — CONSTANTS
 ══════════════════════════════════════════════════════════ */
@@ -549,7 +577,7 @@ export default function App() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-900 via-blue-800 to-indigo-900">
         <div className="flex flex-col items-center gap-4 animate-fade-in">
           <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center animate-float">
-            <MapPin className="w-8 h-8 text-white" />
+            <DragonBridgeIcon className="w-9 h-9" />
           </div>
           <Loader2 className="w-6 h-6 text-white/60 animate-spin" />
           <p className="text-white/70 text-sm font-medium">Đang khởi động...</p>
@@ -737,7 +765,7 @@ function AuthHeroPanel() {
       />
       <div className="flex items-center gap-3 relative z-10">
         <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-          <MapPin className="w-5 h-5 text-white" />
+          <DragonBridgeIcon className="w-6 h-6" />
         </div>
         <span className="text-white font-bold text-xl tracking-tight">
           Da Nang GO
@@ -785,7 +813,7 @@ function LoginScreen() {
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-8">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-200">
-              <MapPin className="w-5 h-5 text-white" />
+              <DragonBridgeIcon className="w-6 h-6" />
             </div>
             <span className="text-xl font-bold text-gray-900">Da Nang GO</span>
           </div>
@@ -1322,7 +1350,7 @@ function MainShell({
       <aside className="hidden md:flex flex-col w-[88px] border-r border-gray-100 bg-white min-h-screen fixed left-0 top-0 z-40 shadow-sm">
         <div className="flex items-center justify-center py-5">
           <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-200">
-            <MapPin className="w-5 h-5 text-white" />
+            <DragonBridgeIcon className="w-6 h-6" />
           </div>
         </div>
         {/* Points widget */}
@@ -1360,7 +1388,7 @@ function MainShell({
           <div className="flex items-center justify-between px-5 py-3 max-w-6xl mx-auto">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center md:hidden">
-                <MapPin className="w-4 h-4 text-white" />
+                <DragonBridgeIcon className="w-5 h-5" />
               </div>
               <h1 className="text-[17px] font-black text-gray-900 tracking-tight">
                 Da Nang <span className="text-blue-500">GO</span>

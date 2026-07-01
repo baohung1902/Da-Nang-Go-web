@@ -5,34 +5,7 @@
 import { useState } from 'react';
 import { Send, Loader2, Bot, X } from 'lucide-react';
 import { askGeminiAboutDaNang } from './aiService';
-import { useToast } from './App.jsx'; // Re‑use toast context for error notifications
-
-// Custom Dragon Bridge SVG Icon for Da Nang branding
-function DragonBridgeIcon({ className = "w-6 h-6" }) {
-  return (
-    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      {/* Water Waves */}
-      <path d="M8 50 C 16 48, 20 52, 28 50 C 36 48, 40 52, 48 50 C 56 48, 60 52, 64 50" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" opacity="0.5" />
-      <path d="M0 54 C 8 52, 12 56, 20 54 C 28 52, 32 56, 40 54 C 48 52, 52 56, 60 54" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
-      
-      {/* Bridge Deck */}
-      <line x1="4" y1="42" x2="60" y2="42" stroke="#cbd5e1" strokeWidth="3" strokeLinecap="round" />
-      
-      {/* Dragon Body (Golden arches) */}
-      <path d="M12 42 Q 19 16, 26 42 Q 33 16, 40 42 Q 47 16, 54 42" fill="none" stroke="#fbbf24" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
-      
-      {/* Dragon Head (Facing right, looking up slightly) */}
-      <path d="M54 42 L 56 32 L 62 33 L 63 38 L 61 43 Z" fill="#fbbf24" stroke="#fbbf24" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-      
-      {/* Dragon Fire/Horn details */}
-      <path d="M56 32 Q 54 28, 51 30" fill="none" stroke="#f87171" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M62 33 Q 65 30, 68 31" fill="none" stroke="#fb923c" strokeWidth="1.5" strokeLinecap="round" />
-      
-      {/* Dragon Eye */}
-      <circle cx="58.5" cy="35.5" r="0.8" fill="#ef4444" />
-    </svg>
-  );
-}
+import { useToast, DragonBridgeIcon } from './App.jsx'; // Re‑use toast context and DragonBridgeIcon
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
