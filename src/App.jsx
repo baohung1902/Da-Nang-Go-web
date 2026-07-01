@@ -83,6 +83,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import Chatbot from "./Chatbot";
 
 /* ══════════════════════════════════════════════════════════
    § 1 — CONSTANTS
@@ -598,6 +599,7 @@ export default function App() {
         explorerPoints={explorerPoints}
         awardPoints={awardPoints}
       />
+      <Chatbot />
     </ToastProvider>
   );
 }
