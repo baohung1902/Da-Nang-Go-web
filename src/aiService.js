@@ -69,7 +69,7 @@ export async function analyzeLocationWithAI(placeName, category) {
     );
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
   const reviews = getMockReviews(placeName, category);
 
   const buildPrompt = (strict = false) => `Bạn là một trợ lý AI chuyên phân tích đánh giá nhà hàng, quán ăn, và địa điểm du lịch.

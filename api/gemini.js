@@ -26,7 +26,7 @@ export default async function handler(req, res) {
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const MODEL_NAME = "gemini-3.5-flash"; // updated to gemini-3.5-flash (works in 2026 free tier)
+    const MODEL_NAME = "gemini-3.1-flash-lite"; // updated to gemini-3.1-flash-lite (high availability)
     const MAX_RETRIES = 3;
     const RETRY_DELAY_MS = 25000; // 25s as suggested by API
     const systemInstruction = `Bạn là một trợ lý AI thông thái, thân thiện và hiểu rõ về du lịch Đà Nẵng. Cung cấp câu trả lời ngắn gọn, hữu ích, không kèm markdown. Trả lời chỉ dưới dạng văn bản thuần, không có ký tự đặc biệt.`;
