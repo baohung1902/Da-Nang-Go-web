@@ -1,9 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+console.log("VITE_GEMINI_API_KEY is defined:", !!apiKey);
 let genAI;
-if (apiKey && apiKey.length > 10 && !apiKey.startsWith('AQ.')) {
+if (apiKey && apiKey.length > 10) {
   genAI = new GoogleGenerativeAI(apiKey);
+} else {
+  console.warn("VITE_GEMINI_API_KEY is missing or invalid. Gemini integration will not work.");
 }
 
 /* ─────────────────────────────────────────
@@ -129,7 +132,7 @@ export async function askGeminiAboutDaNang(userPrompt) {
     const text = result?.response?.text?.() ?? result?.response?.text ?? "";
     return text.trim();
   } catch (error) {
-    console.error("askGeminiAboutDaNang error:", error);
-    throw new Error("Không thể trả lời câu hỏi. Vui lòng thử lại sau.");
+    console.error("Gemini API Error details:", error);
+    throw new Error("Không thể kết nối với Gemini. Vui lòng thử lại sau.");
   }
 }
