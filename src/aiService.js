@@ -119,20 +119,23 @@ YÊU CẦU BẮT BUỘC: Chỉ trả về 1 JSON object hợp lệ, không có t
 // Uses the gemini-2.0-flash model with a strict system instruction.
 // -------------------------------------------------------------------
 export async function askGeminiAboutDaNang(userPrompt) {
-  if (!genAI) {
-    throw new Error(
-      "API Key Gemini chưa được cấu hình. Vui lòng thêm VITE_GEMINI_API_KEY hợp lệ vào file .env và khởi động lại ứng dụng."
-    );
-  }
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-  const systemInstruction = `Bạn là một trợ lý AI thông thái, thân thiện và hiểu rõ về du lịch Đà Nẵng. Cung cấp câu trả lời ngắn gọn, hữu ích, không kèm markdown. Trả lời chỉ dưới dạng văn bản thuần, không có ký tự đặc biệt.`;
-  const prompt = `${systemInstruction}\n\nCâu hỏi của người dùng: "${userPrompt}"`;
   try {
-    const result = await model.generateContent(prompt);
-    const text = result?.response?.text?.() ?? result?.response?.text ?? "";
-    return text.trim();
+    const response = await fetch('/api/gemini', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userPrompt }),
+    });
+    if (!response.ok) {
+      const err = await response.json();
+      console.error('Server error response:', err);
+      throw new Error(err.error || 'Không thể kết nối với Gemini. Vui lòng thử lại sau.');
+    }
+    const data = await response.json();
+    return data.answer?.trim() ?? '';
   } catch (error) {
-    console.error("Gemini API Error details:", error);
-    throw new Error("Không thể kết nối với Gemini. Vui lòng thử lại sau.");
+    console.error('Gemini API Error details:', error);
+    throw new Error('Không thể kết nối với Gemini. Vui lòng thử lại sau.');
   }
 }
