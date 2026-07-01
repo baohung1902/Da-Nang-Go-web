@@ -577,7 +577,7 @@ export default function App() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-900 via-blue-800 to-indigo-900">
         <div className="flex flex-col items-center gap-4 animate-fade-in">
           <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center animate-float">
-            <DragonBridgeIcon className="w-9 h-9" />
+            <img src="/favicon.png" alt="Da Nang GO Logo" className="w-12 h-12 object-contain rounded-lg" />
           </div>
           <Loader2 className="w-6 h-6 text-white/60 animate-spin" />
           <p className="text-white/70 text-sm font-medium">Đang khởi động...</p>
