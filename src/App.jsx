@@ -765,7 +765,7 @@ function AuthHeroPanel() {
       />
       <div className="flex items-center gap-3 relative z-10">
         <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-          <DragonBridgeIcon className="w-6 h-6" />
+          <img src="/favicon.png" alt="Da Nang GO Logo" className="w-6 h-6 object-contain" />
         </div>
         <span className="text-white font-bold text-xl tracking-tight">
           Da Nang GO
@@ -813,7 +813,7 @@ function LoginScreen() {
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-8">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-200">
-              <DragonBridgeIcon className="w-6 h-6" />
+              <img src="/favicon.png" alt="Da Nang GO Logo" className="w-6 h-6 object-contain" />
             </div>
             <span className="text-xl font-bold text-gray-900">Da Nang GO</span>
           </div>
