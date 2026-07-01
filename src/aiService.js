@@ -1,12 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-console.log("VITE_GEMINI_API_KEY is defined:", !!apiKey);
+const apiKey = (import.meta && import.meta.env && import.meta.env.VITE_GEMINI_API_KEY) || process.env.VITE_GEMINI_API_KEY;
+console.log('VITE_GEMINI_API_KEY value:', apiKey ? '***' : 'undefined');
 let genAI;
 if (apiKey && apiKey.length > 10) {
   genAI = new GoogleGenerativeAI(apiKey);
 } else {
-  console.warn("VITE_GEMINI_API_KEY is missing or invalid. Gemini integration will not work.");
+  console.warn('VITE_GEMINI_API_KEY is missing or invalid. Gemini integration will not work.');
 }
 
 /* ─────────────────────────────────────────
