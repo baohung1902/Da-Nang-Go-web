@@ -17,16 +17,16 @@ export default async function handler(req, res) {
     return;
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    console.error("GEMINI_API_KEY is not configured in Vercel environment");
+    console.error("Gemini API key is not configured in environment variables");
     res.status(500).json({ error: "Server configuration error: missing Gemini API key" });
     return;
   }
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const MODEL_NAME = "gemini-3.1-flash-lite"; // updated to gemini-3.1-flash-lite (high availability)
+    const MODEL_NAME = "gemini-3.5-flash"; // updated to gemini-3.5-flash for better availability
     const MAX_RETRIES = 3;
     const RETRY_DELAY_MS = 25000; // 25s as suggested by API
     const systemInstruction = `Bạn là một trợ lý AI thông thái, thân thiện và hiểu rõ về du lịch Đà Nẵng. Cung cấp câu trả lời ngắn gọn, hữu ích, không kèm markdown. Trả lời chỉ dưới dạng văn bản thuần, không có ký tự đặc biệt.`;

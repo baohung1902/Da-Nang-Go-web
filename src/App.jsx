@@ -1349,8 +1349,9 @@ function MainShell({
       {/* Sidebar desktop */}
       <aside className="hidden md:flex flex-col w-[88px] border-r border-gray-100 bg-white min-h-screen fixed left-0 top-0 z-40 shadow-sm">
         <div className="flex items-center justify-center py-5">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-200">
-            <DragonBridgeIcon className="w-6 h-6" />
+          <div className="flex items-center gap-2">
+            <img src="/favicon.png" alt="Da Nang GO" style={{ width: '45px', height: '45px', objectFit: 'contain' }} />
+            <span className="text-sm font-bold text-gray-800">Da Nang GO</span>
           </div>
         </div>
         {/* Points widget */}
@@ -1388,7 +1389,7 @@ function MainShell({
           <div className="flex items-center justify-between px-5 py-3 max-w-6xl mx-auto">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center md:hidden">
-                <DragonBridgeIcon className="w-5 h-5" />
+                <img src="/favicon.png" alt="Da Nang GO" style={{ width: '45px', height: '45px', objectFit: 'contain' }} />
               </div>
               <h1 className="text-[17px] font-black text-gray-900 tracking-tight">
                 Da Nang <span className="text-blue-500">GO</span>
