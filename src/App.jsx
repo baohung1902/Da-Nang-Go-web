@@ -344,7 +344,7 @@ function ToastItem({ toast, onDismiss }) {
   );
 }
 
-const useToast = () => useContext(ToastContext);
+export const useToast = () => useContext(ToastContext);
 
 /* ══════════════════════════════════════════════════════════
    § 3 — GAMIFICATION HELPERS
