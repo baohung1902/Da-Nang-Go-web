@@ -3,7 +3,7 @@
 // Uses the askGeminiAboutDaNang function defined in src/aiService.js.
 
 import { useState } from 'react';
-import { Send, Loader2, Bot, X, MessageSquare } from 'lucide-react';
+import { Send, Loader2, Bot, X, Sparkles } from 'lucide-react';
 import { askGeminiAboutDaNang } from './aiService';
 import { useToast } from './App.jsx'; // Re‑use toast context for error notifications
 
@@ -43,10 +43,19 @@ export default function Chatbot() {
       {/* Floating Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center cursor-pointer"
+        className="fixed bottom-6 right-6 z-50 p-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center cursor-pointer group"
         aria-label="Toggle chat assistant"
       >
-        {isOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
+        {isOpen ? (
+          <X className="w-6 h-6" />
+        ) : (
+          <div className="relative flex items-center justify-center">
+            <Sparkles className="w-6 h-6 animate-pulse" />
+            <span className="absolute -top-10 right-0 bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+              Hỏi AI Assistant
+            </span>
+          </div>
+        )}
       </button>
 
       {/* Chat Window */}
