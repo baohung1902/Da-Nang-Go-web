@@ -90,20 +90,46 @@ YÊU CẦU BẮT BUỘC: Chỉ trả về 1 JSON object hợp lệ, không có t
   // Attempt 1
   try {
     const result = await model.generateContent(buildPrompt(false));
-    const text = result.response.text();
-    return extractJSON(text);
+      const text = result?.response?.text?.() ?? result?.response?.text ?? result?.response?.candidates?.[0]?.content?.parts?.[0]?.text ?? result?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+      if (!text) throw new Error('Empty response from Gemini');
+      return extractJSON(text);
   } catch (firstError) {
     console.warn("AI Analysis — Attempt 1 failed, retrying...", firstError.message);
     // Attempt 2 with stricter prompt
     try {
       const result = await model.generateContent(buildPrompt(true));
-      const text = result.response.text();
-      return extractJSON(text);
+       const text = result?.response?.text?.() ?? result?.response?.text ?? result?.response?.candidates?.[0]?.content?.parts?.[0]?.text ?? result?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+       if (!text) throw new Error('Empty response from Gemini');
+       return extractJSON(text);
     } catch (secondError) {
       console.error("AI Analysis — Both attempts failed:", secondError);
       throw new Error(
         "Không thể phân tích dữ liệu AI. Hãy kiểm tra API Key hoặc thử lại sau."
       );
     }
+  }
+}
+
+// -------------------------------------------------------------------
+// Chatbot helper: askGeminiAboutDaNang
+// Accepts a free‑form user query and returns a concise answer.
+// Uses the gemini-2.0-flash model with a strict system instruction.
+// -------------------------------------------------------------------
+export async function askGeminiAboutDaNang(userPrompt) {
+  if (!genAI) {
+    throw new Error(
+      "API Key Gemini chưa được cấu hình. Vui lòng thêm VITE_GEMINI_API_KEY hợp lệ vào file .env và khởi động lại ứng dụng."
+    );
+  }
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const systemInstruction = `Bạn là một trợ lý AI thông thái, thân thiện và hiểu rõ về du lịch Đà Nẵng. Cung cấp câu trả lời ngắn gọn, hữu ích, không kèm markdown. Trả lời chỉ dưới dạng văn bản thuần, không có ký tự đặc biệt.`;
+  const prompt = `${systemInstruction}\n\nCâu hỏi của người dùng: "${userPrompt}"`;
+  try {
+    const result = await model.generateContent(prompt);
+    const text = result?.response?.text?.() ?? result?.response?.text ?? "";
+    return text.trim();
+  } catch (error) {
+    console.error("askGeminiAboutDaNang error:", error);
+    throw new Error("Không thể trả lời câu hỏi. Vui lòng thử lại sau.");
   }
 }
