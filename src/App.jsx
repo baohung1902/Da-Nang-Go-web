@@ -1823,36 +1823,43 @@ function ExploreTab({ locations, awardPoints }) {
   });
 
   const handleAddLocation = async (e) => {
-    e.preventDefault();
-    if (!newLoc.title.trim() || !newLoc.location.trim()) return;
-    setIsSubmitting(true);
-    try {
-      const newId = Date.now().toString();
-      await setDoc(doc(db, "locations", newId), {
-        id: newId,
-        title: newLoc.title,
-        location: newLoc.location,
-        category: newLoc.category,
-        rating: "5.0",
-        distance: "N/A",
-        imgUrl: newLoc.imgUrl,
-        description: newLoc.description || "Địa điểm mới được thêm bởi bạn.",
-      });
-      setNewLoc({
-        title: "",
-        location: "",
-        description: "",
-        imgUrl: "",
-        category: "Attractions",
-      });
-      setShowAddModal(false);
-      awardPoints(10);
-      showToast("success", "Đã thêm địa điểm! +10 điểm Explorer 🗺️");
-    } catch {
-      showToast("error", "Không thể thêm địa điểm. Kiểm tra quyền Firebase.");
-    }
-    setIsSubmitting(false);
-  };
+  e.preventDefault();
+  // Ensure user is authenticated before attempting to write
+  if (!auth.currentUser) {
+    showToast("error", "Vui lòng đăng nhập trước khi thêm địa điểm.");
+    return;
+  }
+  if (!newLoc.title.trim() || !newLoc.location.trim()) return;
+  setIsSubmitting(true);
+  try {
+    const newId = Date.now().toString();
+    await setDoc(doc(db, "locations", newId), {
+      id: newId,
+      title: newLoc.title,
+      location: newLoc.location,
+      category: newLoc.category,
+      rating: "5.0",
+      distance: "N/A",
+      imgUrl: newLoc.imgUrl,
+      description: newLoc.description || "Địa điểm mới được thêm bởi bạn.",
+    });
+    setNewLoc({
+      title: "",
+      location: "",
+      description: "",
+      imgUrl: "",
+      category: "Attractions",
+    });
+    setShowAddModal(false);
+    awardPoints(10);
+    showToast("success", "Đã thêm địa điểm! +10 điểm Explorer 🗺️");
+  } catch (error) {
+    console.error("Firebase Error Code:", error.code);
+    console.error("Firebase Error Message:", error.message);
+    showToast("error", `Không thể thêm địa điểm. ${error.message}`);
+  }
+  setIsSubmitting(false);
+};
 
   return (
     <div className="space-y-5 animate-fade-in-up">
@@ -2812,8 +2819,10 @@ function ProfileTab({
           setIsUploading(false);
         },
       );
-    } catch {
-      showToast("error", "Có lỗi xảy ra khi upload.");
+    } catch (error) {
+      console.error("Avatar Upload Error Code:", error.code);
+      console.error("Avatar Upload Error Message:", error.message);
+      showToast("error", `Có lỗi xảy ra khi upload. ${error.message}`);
       setIsUploading(false);
     }
   };
