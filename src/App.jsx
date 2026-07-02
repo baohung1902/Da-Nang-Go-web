@@ -24,7 +24,7 @@ import {
   Loader2,
   User,
   Phone,
-  Edit3,
+  Edit3, Trash2,
   Save,
   Camera,
   Tag,
@@ -71,7 +71,7 @@ import {
   collection,
   onSnapshot,
   doc,
-  setDoc,
+  setDoc, deleteDoc,
   updateDoc,
 } from "firebase/firestore";
 import {
@@ -431,6 +431,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authUser, setAuthUser] = useState(null);
   const [activeTab, setActiveTab] = useState("home");
+  const [editingLocation, setEditingLocation] = useState(null);
 
   const [locations, setLocations] = useState([]);
   const [services] = useState(INITIAL_SERVICES);
@@ -1683,7 +1684,7 @@ function HomeTab({
         ) : (
           <div className="flex overflow-x-auto gap-4 snap-x scrollbar-hide md:grid md:grid-cols-4 md:overflow-visible pb-2">
             {locations.slice(0, 4).map((loc) => (
-              <LocationCard key={loc.id} location={loc} />
+              <LocationCard key={loc.id} location={loc} onEdit={handleEdit} onDelete={handleDelete} />
             ))}
           </div>
         )}
@@ -1742,7 +1743,7 @@ function HomeTab({
   );
 }
 
-function LocationCard({ location }) {
+function LocationCard({ location, onEdit, onDelete }) {
   return (
     <div className="min-w-[260px] md:min-w-0 snap-start bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden card-hover group cursor-pointer">
       <div className="relative h-40 overflow-hidden bg-gray-100">
@@ -1860,6 +1861,31 @@ function ExploreTab({ locations, awardPoints }) {
   }
   setIsSubmitting(false);
 };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa địa điểm này không?")) return;
+    try {
+      await deleteDoc(doc(db, "locations", id.toString()));
+      showToast("success", "Xóa thành công!");
+    } catch (error) {
+      console.error("Delete Error Code:", error.code);
+      console.error("Delete Error Message:", error.message);
+      showToast("error", `Xóa thất bại: ${error.message}`);
+    }
+  };
+
+  const handleEdit = (location) => {
+    setEditingLocation(location);
+    setNewLoc({
+      title: location.title,
+      location: location.location,
+      description: location.description,
+      imgUrl: location.imgUrl,
+      category: location.category,
+    });
+    setShowAddModal(true);
+  };
+
 
   return (
     <div className="space-y-5 animate-fade-in-up">
