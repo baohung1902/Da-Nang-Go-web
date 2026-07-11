@@ -1684,7 +1684,7 @@ function HomeTab({
         ) : (
           <div className="flex overflow-x-auto gap-4 snap-x scrollbar-hide md:grid md:grid-cols-4 md:overflow-visible pb-2">
             {locations.slice(0, 4).map((loc) => (
-              <LocationCard key={loc.id} location={loc} onEdit={handleEdit} onDelete={handleDelete} />
+              <LocationCard key={loc.id} location={loc} />
             ))}
           </div>
         )}
@@ -1862,29 +1862,6 @@ function ExploreTab({ locations, awardPoints }) {
   setIsSubmitting(false);
 };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa địa điểm này không?")) return;
-    try {
-      await deleteDoc(doc(db, "locations", id.toString()));
-      showToast("success", "Xóa thành công!");
-    } catch (error) {
-      console.error("Delete Error Code:", error.code);
-      console.error("Delete Error Message:", error.message);
-      showToast("error", `Xóa thất bại: ${error.message}`);
-    }
-  };
-
-  const handleEdit = (location) => {
-    setEditingLocation(location);
-    setNewLoc({
-      title: location.title,
-      location: location.location,
-      description: location.description,
-      imgUrl: location.imgUrl,
-      category: location.category,
-    });
-    setShowAddModal(true);
-  };
 
 
   return (
