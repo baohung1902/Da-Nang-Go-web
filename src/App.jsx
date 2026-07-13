@@ -391,39 +391,53 @@ function getNextTier(pts) {
 /* ══════════════════════════════════════════════════════════
    § 4 — MODAL
 ══════════════════════════════════════════════════════════ */
-function Modal({ isOpen, onClose, title, children }) {
+function Modal({ isOpen, onClose, title, children, footer }) {
   useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "";
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+    } else {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+    }
     return () => {
       document.body.style.overflow = "";
+      document.body.style.touchAction = "";
     };
   }, [isOpen]);
   if (!isOpen) return null;
   return (
     <div
-      className="fixed inset-0 z-[100] overflow-y-auto bg-black/40 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[100] flex items-end md:items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in"
       onClick={onClose}
     >
-      <div className="flex min-h-full items-end md:items-center justify-center p-0 md:p-4">
-        <div
-          className="bg-white w-full md:w-[540px] md:rounded-2xl rounded-t-3xl shadow-2xl animate-slide-up flex flex-col max-h-[90vh]"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Fixed Header */}
-          <div className="flex-shrink-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between rounded-t-3xl md:rounded-t-2xl">
-            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          {/* Scrollable Body */}
-          <div className="flex-1 overflow-y-auto overscroll-contain p-6">
-            {children}
-          </div>
+      <div
+        className="bg-white w-full md:w-[540px] md:rounded-2xl rounded-t-3xl shadow-2xl animate-slide-up flex flex-col max-h-[90vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Fixed Header */}
+        <div className="flex-shrink-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between rounded-t-3xl md:rounded-t-2xl">
+          <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
+        {/* Scrollable Body */}
+        <div
+          className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-6"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          {children}
+        </div>
+        {/* Fixed Footer (pinned at bottom) */}
+        {footer && (
+          <div className="flex-shrink-0 border-t border-gray-100 px-6 py-4 bg-white md:rounded-b-2xl">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -2032,13 +2046,33 @@ function ExploreTab({ locations, awardPoints }) {
         <Plus className="w-6 h-6" />
       </button>
 
-      {/* Add Modal */}
+      {/* Add/Edit Modal */}
       <Modal
         isOpen={showAddModal}
         onClose={closeModal}
         title={editingLocation ? "✏️ Sửa địa điểm" : "➕ Thêm địa điểm du lịch"}
+        footer={
+          <button
+            type="submit"
+            form="location-form"
+            disabled={isSubmitting}
+            className={`w-full py-3.5 ${editingLocation ? "bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-200" : "bg-gradient-to-r from-blue-500 to-blue-600 shadow-blue-200"} text-white font-bold rounded-xl shadow-lg hover:opacity-90 active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2`}
+          >
+            {isSubmitting ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : editingLocation ? (
+              <>
+                <Save className="w-5 h-5" /> Lưu thay đổi
+              </>
+            ) : (
+              <>
+                <Plus className="w-5 h-5" /> Thêm địa điểm (+10 điểm)
+              </>
+            )}
+          </button>
+        }
       >
-        <form onSubmit={handleAddLocation} className="space-y-4">
+        <form id="location-form" onSubmit={handleAddLocation} className="space-y-4">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               Tên địa điểm *
@@ -2114,23 +2148,6 @@ function ExploreTab({ locations, awardPoints }) {
               />
             </div>
           </div>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`w-full py-3.5 ${editingLocation ? "bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-200" : "bg-gradient-to-r from-blue-500 to-blue-600 shadow-blue-200"} text-white font-bold rounded-xl shadow-lg hover:opacity-90 active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2`}
-          >
-            {isSubmitting ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : editingLocation ? (
-              <>
-                <Save className="w-5 h-5" /> Lưu thay đổi
-              </>
-            ) : (
-              <>
-                <Plus className="w-5 h-5" /> Thêm địa điểm (+10 điểm)
-              </>
-            )}
-          </button>
         </form>
       </Modal>
 
