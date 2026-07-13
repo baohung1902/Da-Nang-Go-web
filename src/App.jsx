@@ -1798,6 +1798,7 @@ function ExploreTab({ locations, awardPoints }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingLocation, setEditingLocation] = useState(null);
   const [newLoc, setNewLoc] = useState({
     title: "",
     location: "",
@@ -1805,6 +1806,21 @@ function ExploreTab({ locations, awardPoints }) {
     imgUrl: "",
     category: "Attractions",
   });
+
+  const resetForm = () => {
+    setNewLoc({ title: "", location: "", description: "", imgUrl: "", category: "Attractions" });
+    setEditingLocation(null);
+  };
+
+  const openAddModal = () => {
+    resetForm();
+    setShowAddModal(true);
+  };
+
+  const closeModal = () => {
+    resetForm();
+    setShowAddModal(false);
+  };
   const categories = [
     "All",
     "Attractions",
@@ -1824,44 +1840,71 @@ function ExploreTab({ locations, awardPoints }) {
   });
 
   const handleAddLocation = async (e) => {
-  e.preventDefault();
-  // Ensure user is authenticated before attempting to write
-  if (!auth.currentUser) {
-    showToast("error", "Vui lòng đăng nhập trước khi thêm địa điểm.");
-    return;
-  }
-  if (!newLoc.title.trim() || !newLoc.location.trim()) return;
-  setIsSubmitting(true);
-  try {
-    const newId = Date.now().toString();
-    await setDoc(doc(db, "locations", newId), {
-      id: newId,
-      title: newLoc.title,
-      location: newLoc.location,
-      category: newLoc.category,
-      rating: "5.0",
-      distance: "N/A",
-      imgUrl: newLoc.imgUrl,
-      description: newLoc.description || "Địa điểm mới được thêm bởi bạn.",
-    });
-    setNewLoc({
-      title: "",
-      location: "",
-      description: "",
-      imgUrl: "",
-      category: "Attractions",
-    });
-    setShowAddModal(false);
-    awardPoints(10);
-    showToast("success", "Đã thêm địa điểm! +10 điểm Explorer 🗺️");
-  } catch (error) {
-    console.error("Firebase Error Code:", error.code);
-    console.error("Firebase Error Message:", error.message);
-    showToast("error", `Không thể thêm địa điểm. ${error.message}`);
-  }
-  setIsSubmitting(false);
-};
+    e.preventDefault();
+    if (!auth.currentUser) {
+      showToast("error", "Vui lòng đăng nhập trước khi thêm địa điểm.");
+      return;
+    }
+    if (!newLoc.title.trim() || !newLoc.location.trim()) return;
+    setIsSubmitting(true);
+    try {
+      if (editingLocation) {
+        // UPDATE mode
+        await updateDoc(doc(db, "locations", editingLocation.id.toString()), {
+          title: newLoc.title,
+          location: newLoc.location,
+          category: newLoc.category,
+          imgUrl: newLoc.imgUrl,
+          description: newLoc.description || "Địa điểm được cập nhật.",
+        });
+        showToast("success", "Đã cập nhật địa điểm thành công! ✏️");
+      } else {
+        // CREATE mode
+        const newId = Date.now().toString();
+        await setDoc(doc(db, "locations", newId), {
+          id: newId,
+          title: newLoc.title,
+          location: newLoc.location,
+          category: newLoc.category,
+          rating: "5.0",
+          distance: "N/A",
+          imgUrl: newLoc.imgUrl,
+          description: newLoc.description || "Địa điểm mới được thêm bởi bạn.",
+        });
+        awardPoints(10);
+        showToast("success", "Đã thêm địa điểm! +10 điểm Explorer 🗺️");
+      }
+      closeModal();
+    } catch (error) {
+      console.error("Firebase Error Code:", error.code);
+      console.error("Firebase Error Message:", error.message);
+      showToast("error", `Thao tác thất bại: ${error.message}`);
+    }
+    setIsSubmitting(false);
+  };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa địa điểm này không?")) return;
+    try {
+      await deleteDoc(doc(db, "locations", id.toString()));
+      showToast("success", "Đã xóa địa điểm thành công! 🗑️");
+    } catch (error) {
+      console.error("Delete Error:", error.code, error.message);
+      showToast("error", `Xóa thất bại: ${error.message}`);
+    }
+  };
+
+  const handleEdit = (location) => {
+    setEditingLocation(location);
+    setNewLoc({
+      title: location.title || "",
+      location: location.location || "",
+      description: location.description || "",
+      imgUrl: location.imgUrl || "",
+      category: location.category || "Attractions",
+    });
+    setShowAddModal(true);
+  };
 
 
   return (
@@ -1937,11 +1980,25 @@ function ExploreTab({ locations, awardPoints }) {
                     <span className="text-xs truncate">{loc.location}</span>
                   </div>
                 </div>
-                <div className="absolute top-3 right-3 bg-black/30 backdrop-blur-sm rounded-lg px-2 py-0.5 flex items-center gap-1">
-                  <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                  <span className="text-xs font-bold text-white">
-                    {loc.rating}
-                  </span>
+                <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                  <div className="bg-black/30 backdrop-blur-sm rounded-lg px-2 py-0.5 flex items-center gap-1">
+                    <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                    <span className="text-xs font-bold text-white">{loc.rating}</span>
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleEdit(loc); }}
+                    className="bg-black/30 backdrop-blur-sm rounded-lg p-1.5 hover:bg-blue-500/80 transition-colors"
+                    title="Sửa địa điểm"
+                  >
+                    <Edit3 className="w-3.5 h-3.5 text-white" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDelete(loc.id); }}
+                    className="bg-black/30 backdrop-blur-sm rounded-lg p-1.5 hover:bg-red-500/80 transition-colors"
+                    title="Xóa địa điểm"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-white" />
+                  </button>
                 </div>
               </div>
               <div className="p-4">
@@ -1963,7 +2020,7 @@ function ExploreTab({ locations, awardPoints }) {
       )}
 
       <button
-        onClick={() => setShowAddModal(true)}
+        onClick={openAddModal}
         className="fixed bottom-24 md:bottom-8 right-6 bg-gradient-to-br from-blue-500 to-blue-600 text-white w-14 h-14 rounded-2xl shadow-xl shadow-blue-300 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 z-40"
       >
         <Plus className="w-6 h-6" />
@@ -1972,8 +2029,8 @@ function ExploreTab({ locations, awardPoints }) {
       {/* Add Modal */}
       <Modal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        title="Thêm địa điểm du lịch"
+        onClose={closeModal}
+        title={editingLocation ? "✏️ Sửa địa điểm" : "➕ Thêm địa điểm du lịch"}
       >
         <form onSubmit={handleAddLocation} className="space-y-4">
           <div>
@@ -2054,10 +2111,14 @@ function ExploreTab({ locations, awardPoints }) {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-200 hover:from-blue-600 hover:to-blue-700 active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2"
+            className={`w-full py-3.5 ${editingLocation ? "bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-200" : "bg-gradient-to-r from-blue-500 to-blue-600 shadow-blue-200"} text-white font-bold rounded-xl shadow-lg hover:opacity-90 active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2`}
           >
             {isSubmitting ? (
               <Loader2 className="w-5 h-5 animate-spin" />
+            ) : editingLocation ? (
+              <>
+                <Save className="w-5 h-5" /> Lưu thay đổi
+              </>
             ) : (
               <>
                 <Plus className="w-5 h-5" /> Thêm địa điểm (+10 điểm)
