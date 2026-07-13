@@ -401,23 +401,29 @@ function Modal({ isOpen, onClose, title, children }) {
   if (!isOpen) return null;
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end md:items-center justify-center modal-backdrop animate-fade-in"
+      className="fixed inset-0 z-[100] overflow-y-auto bg-black/40 backdrop-blur-sm animate-fade-in"
       onClick={onClose}
     >
-      <div
-        className="bg-white w-full md:w-[540px] md:rounded-2xl rounded-t-3xl max-h-[88vh] overflow-y-auto shadow-2xl animate-slide-up"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between rounded-t-3xl md:rounded-t-2xl z-10">
-          <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+      <div className="flex min-h-full items-end md:items-center justify-center p-0 md:p-4">
+        <div
+          className="bg-white w-full md:w-[540px] md:rounded-2xl rounded-t-3xl shadow-2xl animate-slide-up flex flex-col max-h-[90vh]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Fixed Header */}
+          <div className="flex-shrink-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between rounded-t-3xl md:rounded-t-2xl">
+            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          {/* Scrollable Body */}
+          <div className="flex-1 overflow-y-auto overscroll-contain p-6">
+            {children}
+          </div>
         </div>
-        <div className="p-6">{children}</div>
       </div>
     </div>
   );
