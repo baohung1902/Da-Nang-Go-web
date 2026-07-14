@@ -404,37 +404,30 @@ function Modal({ isOpen, onClose, title, children, footer }) {
   }, [isOpen]);
   if (!isOpen) return null;
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-end md:items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white w-full md:w-[540px] md:rounded-2xl rounded-t-3xl shadow-2xl animate-slide-up relative overflow-y-auto overscroll-contain max-h-[85vh] md:max-h-[90vh]"
-        style={{ WebkitOverflowScrolling: "touch" }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Sticky Header */}
-        <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 py-4 flex items-center justify-between rounded-t-3xl md:rounded-t-2xl">
-          <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        
-        {/* Content Body */}
-        <div className="p-6">
-          {children}
-        </div>
-
-        {/* Sticky Footer */}
-        {footer && (
-          <div className="sticky bottom-0 z-20 border-t border-gray-100 px-6 py-4 bg-white/95 backdrop-blur-sm md:rounded-b-2xl">
-            {footer}
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-scroll-wrapper">
+        <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+          {/* Sticky Header */}
+          <div className="modal-header">
+            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-        )}
+          {/* Body */}
+          <div className="modal-body">
+            {children}
+          </div>
+          {/* Footer */}
+          {footer && (
+            <div className="modal-footer">
+              {footer}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

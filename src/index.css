@@ -159,12 +159,92 @@ body {
 }
 
 /* ══════════════════════════════════════
-   MODAL BACKDROP
+   MODAL SYSTEM
 ══════════════════════════════════════ */
-.modal-backdrop {
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+/* Overlay: covers the screen, is itself scrollable */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+/* Scroll wrapper: this is the key — it wraps the panel and IS the scroll container */
+.modal-scroll-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 101;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+@media (min-width: 768px) {
+  .modal-scroll-wrapper {
+    align-items: center;
+    padding: 2rem;
+  }
+}
+
+/* Panel: the white card. No overflow rules here — the wrapper scrolls. */
+.modal-panel {
+  position: relative;
+  background: #fff;
+  width: 100%;
+  max-width: 540px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 1.5rem 1.5rem 0 0;
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  overflow: hidden;
+}
+@media (min-width: 768px) {
+  .modal-panel {
+    border-radius: 1rem;
+    max-height: 90vh;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Header: sticky at top of scrollable area */
+.modal-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f3f4f6;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Body: this is what actually scrolls */
+.modal-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 1.5rem;
+  min-height: 0;
+}
+
+/* Footer: sticky at bottom */
+.modal-footer {
+  flex-shrink: 0;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #f3f4f6;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 /* ══════════════════════════════════════
