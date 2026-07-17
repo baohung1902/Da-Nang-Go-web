@@ -71,7 +71,7 @@ import {
   collection,
   onSnapshot,
   doc,
-  setDoc, deleteDoc,
+  setDoc, deleteDoc, arrayRemove,
   updateDoc,
 } from "firebase/firestore";
 import {
@@ -392,6 +392,7 @@ function getNextTier(pts) {
    § 4 — MODAL
 ══════════════════════════════════════════════════════════ */
 function Modal({ isOpen, onClose, title, children, footer }) {
+  // Lock background scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -402,32 +403,33 @@ function Modal({ isOpen, onClose, title, children, footer }) {
       document.body.style.overflow = "";
     };
   }, [isOpen]);
+
   if (!isOpen) return null;
+
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-scroll-wrapper">
-        <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
-          {/* Sticky Header */}
-          <div className="modal-header">
-            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+    // Full-screen overlay that scrolls natively
+    <div
+      className="fixed inset-0 z-50 bg-white overflow-y-auto"
+      onClick={onClose}
+    >
+      {/* Sticky header with title and close button */}
+      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur flex items-center justify-between p-4 border-b border-gray-100">
+        <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+        <button
+          onClick={onClose}
+          className="p-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+      {/* Main content container – centered, limited width */}
+      <div className="max-w-4xl mx-auto p-4 pb-20">
+        {children}
+        {footer && (
+          <div className="mt-4 border-t border-gray-100 pt-4">
+            {footer}
           </div>
-          {/* Body */}
-          <div className="modal-body">
-            {children}
-          </div>
-          {/* Footer */}
-          {footer && (
-            <div className="modal-footer">
-              {footer}
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
@@ -2605,6 +2607,30 @@ function CommunityTab({ posts, postsLoading, userProfile, awardPoints }) {
     }
   };
 
+  // Delete a comment from a post
+  const handleDeleteComment = async (postId, commentId) => {
+    // Find the post and comment
+    const post = posts.find((p) => p.id === postId);
+    if (!post) return;
+    const comment = post.comments?.find((c) => c.id === commentId);
+    if (!comment) return;
+    // Ensure only the author can delete
+    if (comment.author !== (userProfile.name || "Ẩn danh")) return;
+    if (!window.confirm("Bạn có chắc muốn xóa bình luận này không?")) return;
+    try {
+      const newComments = post.comments.filter((c) => c.id !== commentId);
+      await updateDoc(doc(db, "posts", postId.toString()), { comments: newComments });
+      // Optimistically update local state
+      setPosts((prev) =>
+        prev.map((p) => (p.id === postId ? { ...p, comments: newComments } : p))
+      );
+      showToast("success", "Đã xóa bình luận!");
+    } catch (e) {
+      console.error(e);
+      showToast("error", "Xóa bình luận thất bại");
+    }
+  };
+
   return (
     <div className="space-y-5 max-w-2xl mx-auto animate-fade-in-up">
       <h2 className="text-xl font-black text-gray-900">Cộng đồng Đà Nẵng</h2>
@@ -2799,6 +2825,15 @@ function CommunityTab({ posts, postsLoading, userProfile, awardPoints }) {
                               <span className="text-sm font-bold text-gray-900">
                                 {cmt.author}
                               </span>
+                              {cmt.author === (userProfile.name || "Ẩn danh") && (
+                                <button
+                                  onClick={() => handleDeleteComment(post.id, cmt.id)}
+                                  className="ml-2 text-red-500 hover:text-red-700 transition-colors"
+                                  aria-label="Delete comment"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
                               <span className="text-[10px] text-gray-400">
                                 {cmt.time}
                               </span>
