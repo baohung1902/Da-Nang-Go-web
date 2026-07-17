@@ -73,6 +73,7 @@ import {
   doc,
   setDoc, deleteDoc, arrayRemove,
   updateDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import {
   signInWithPopup,
@@ -698,7 +699,7 @@ function GoogleButton({ loading, onClick }) {
       className="w-full flex items-center justify-center gap-3 py-3.5 px-5 bg-white border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-blue-300 hover:shadow-md hover:shadow-blue-100/50 active:scale-[0.98] disabled:opacity-60 transition-all duration-200 shadow-sm text-sm"
     >
       {loading ? (
-        <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
+        <Loader2 className="w-5 h-5 animate-spin" />
       ) : (
         <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
           <path
@@ -1473,6 +1474,7 @@ function MainShell({
               postsLoading={postsLoading}
               userProfile={userProfile}
               awardPoints={awardPoints}
+              setPosts={null}
             />
           )}
           {activeTab === "profile" && (
@@ -1482,7 +1484,7 @@ function MainShell({
               posts={posts}
               locations={locations}
               authUser={authUser}
-              onLogout={onLogout}
+              onLogout={handleLogout}
               explorerPoints={explorerPoints}
               tier={tier}
             />
@@ -1755,7 +1757,7 @@ function HomeTab({
   );
 }
 
-function LocationCard({ location, onEdit, onDelete }) {
+function LocationCard({ location }) {
   return (
     <div className="min-w-[260px] md:min-w-0 snap-start bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden card-hover group cursor-pointer">
       <div className="relative h-40 overflow-hidden bg-gray-100">
@@ -2532,13 +2534,15 @@ function ServicesTab({ services }) {
 /* ══════════════════════════════════════════════════════════
    § 12 — COMMUNITY TAB
 ══════════════════════════════════════════════════════════ */
-function CommunityTab({ posts, postsLoading, userProfile, awardPoints }) {
+function CommunityTab({ posts, postsLoading, userProfile, awardPoints, setPosts }) {
   const showToast = useToast();
   const [newPostText, setNewPostText] = useState("");
   const [newPostImg, setNewPostImg] = useState("");
   const [activeCommentId, setActiveCommentId] = useState(null);
   const [commentTexts, setCommentTexts] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [editText, setEditText] = useState("");
 
   const userAvatar = userProfile.name
     ? userProfile.name
@@ -2559,7 +2563,7 @@ function CommunityTab({ posts, postsLoading, userProfile, awardPoints }) {
         id: newId,
         author: userProfile.name || "Người dùng ẩn danh",
         avatar: userAvatar,
-        time: "Vừa xong",
+        time: new Date().toLocaleTimeString(),
         text: newPostText,
         imgUrl: newPostImg,
         likes: 0,
@@ -2574,6 +2578,32 @@ function CommunityTab({ posts, postsLoading, userProfile, awardPoints }) {
       showToast("error", "Không thể đăng bài. Kiểm tra quyền Firebase.");
     }
     setIsSubmitting(false);
+  };
+
+  const handleEditClick = (post) => {
+    setEditingPostId(post.id);
+    setEditText(post.text);
+  };
+
+  const handleSaveEdit = async (id) => {
+    if (!editText.trim()) return;
+    try {
+      await updateDoc(doc(db, "posts", id.toString()), {
+        text: editText,
+        updatedAt: serverTimestamp(),
+      });
+      setEditingPostId(null);
+      setEditText("");
+      showToast("success", "Đã cập nhật bài viết! ✏️");
+    } catch (e) {
+      console.error("Edit Error:", e.code, e.message);
+      showToast("error", `Cập nhật thất bại: ${e.message}`);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPostId(null);
+    setEditText("");
   };
 
   const toggleLike = async (post) => {
@@ -2596,7 +2626,7 @@ function CommunityTab({ posts, postsLoading, userProfile, awardPoints }) {
         author: userProfile.name || "Ẩn danh",
         avatar: userAvatar,
         text,
-        time: "Vừa xong",
+        time: new Date().toLocaleTimeString(),
       };
       await updateDoc(doc(db, "posts", post.id.toString()), {
         comments: [...(post.comments || []), newComment],
@@ -2607,27 +2637,31 @@ function CommunityTab({ posts, postsLoading, userProfile, awardPoints }) {
     }
   };
 
-  // Delete a comment from a post
   const handleDeleteComment = async (postId, commentId) => {
-    // Find the post and comment
     const post = posts.find((p) => p.id === postId);
     if (!post) return;
     const comment = post.comments?.find((c) => c.id === commentId);
     if (!comment) return;
-    // Ensure only the author can delete
     if (comment.author !== (userProfile.name || "Ẩn danh")) return;
     if (!window.confirm("Bạn có chắc muốn xóa bình luận này không?")) return;
     try {
-      const newComments = post.comments.filter((c) => c.id !== commentId);
-      await updateDoc(doc(db, "posts", postId.toString()), { comments: newComments });
-      // Optimistically update local state
-      setPosts((prev) =>
-        prev.map((p) => (p.id === postId ? { ...p, comments: newComments } : p))
-      );
+      await updateDoc(doc(db, "posts", postId.toString()), {
+        comments: post.comments.filter((c) => c.id !== commentId),
+      });
       showToast("success", "Đã xóa bình luận!");
     } catch (e) {
-      console.error(e);
-      showToast("error", "Xóa bình luận thất bại");
+      showToast("error", "Lỗi xóa bình luận");
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa bài viết này không?")) return;
+    try {
+      await deleteDoc(doc(db, "posts", postId.toString()));
+      showToast("success", "Đã xóa bài viết thành công! 🗑️");
+    } catch (error) {
+      console.error("Delete Error:", error.code, error.message);
+      showToast("error", `Xóa thất bại: ${error.message}`);
     }
   };
 
@@ -2734,16 +2768,61 @@ function CommunityTab({ posts, postsLoading, userProfile, awardPoints }) {
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                     {post.avatar}
                   </div>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <h4 className="font-bold text-gray-900 text-sm">
                       {post.author}
                     </h4>
-                    <p className="text-xs text-gray-400">{post.time}</p>
+                    <p className="text-xs text-gray-400">{post.time}{post.updatedAt ? " · đã chỉnh sửa" : ""}</p>
                   </div>
+                  {post.author === (userProfile.name || "Ẩn danh") && (
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <button
+                        onClick={() => handleEditClick(post)}
+                        className="bg-gray-100 hover:bg-blue-100 rounded-lg p-1.5 hover:text-blue-600 transition-colors"
+                        title="Sửa bài viết"
+                      >
+                        <Edit3 className="w-3.5 h-3.5 text-gray-500 hover:text-blue-600" />
+                      </button>
+                      <button
+                        onClick={() => handleDeletePost(post.id)}
+                        className="bg-gray-100 hover:bg-red-100 rounded-lg p-1.5 hover:text-red-600 transition-colors"
+                        title="Xóa bài viết"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-gray-500 hover:text-red-600" />
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-                  {post.text}
-                </p>
+                {editingPostId === post.id ? (
+                  <div className="space-y-3 animate-fade-in-up">
+                    <textarea
+                      rows={4}
+                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-blue-400 text-gray-900 placeholder-gray-400 text-sm resize-none"
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      autoFocus
+                    />
+                    <div className="flex items-center gap-2 justify-end">
+                      <button
+                        onClick={handleCancelEdit}
+                        className="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 active:scale-95 transition-all duration-200"
+                      >
+                        Hủy
+                      </button>
+                      <button
+                        onClick={() => handleSaveEdit(post.id)}
+                        disabled={!editText.trim()}
+                        className="px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl hover:shadow-md hover:shadow-blue-200 active:scale-95 disabled:opacity-40 transition-all duration-200 flex items-center gap-1.5"
+                      >
+                        <Save className="w-3.5 h-3.5" /> Lưu
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                    {post.text}
+                  </p>
+                )}
               </div>
               {post.imgUrl && (
                 <div className="w-full h-52 overflow-hidden bg-gray-100">
